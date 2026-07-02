@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAFAF8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Show Up — Gym Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23E23B2E'/></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap');
+:root { --red:#E23B2E; --ink:#111214; --paper:#FAFAF8; --line:#E4E2DC; --mute:#8A877F; }
+* { box-sizing:border-box; }
+body { margin:0; min-height:100vh; background:var(--paper); color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif; display:flex; justify-content:center; }
+.wrap { width:100%; max-width:430px; padding:28px 20px 48px; }
+.eyebrow { font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--mute); font-weight:600; }
+h1 { font-family:'Archivo Black','Arial Black',sans-serif; font-size:34px; line-height:1.02;
+  text-transform:uppercase; letter-spacing:-.01em; margin:6px 0 2px; }
+h1 em { font-style:normal; color:var(--red); }
+.stats { display:flex; border-top:3px solid var(--ink); border-bottom:1px solid var(--line); margin-top:20px; }
+.stat { flex:1; padding:14px 0 12px; }
+.stat + .stat { border-left:1px solid var(--line); padding-left:16px; }
+.num { font-family:'Archivo Black',sans-serif; font-size:30px; line-height:1; }
+.num.red { color:var(--red); }
+.lab { font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--mute); margin-top:4px; font-weight:600; }
+.check { margin-top:26px; }
+.chips { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.chip { border:1.5px solid var(--ink); background:transparent; color:var(--ink);
+  font:600 12.5px 'Inter',sans-serif; letter-spacing:.04em; padding:7px 13px; border-radius:999px; cursor:pointer;
+  transition:background .12s,color .12s; }
+.chip.on { background:var(--ink); color:var(--paper); }
+.chip:focus-visible { outline:2px solid var(--red); outline-offset:2px; }
+.note { width:100%; border:1.5px solid var(--line); border-radius:8px; padding:10px 12px;
+  font:400 14px 'Inter',sans-serif; background:#fff; margin-bottom:12px; }
+.note:focus { outline:none; border-color:var(--ink); }
+.logbtn { width:100%; background:var(--red); color:#fff; border:none; border-radius:10px;
+  font-family:'Archivo Black',sans-serif; font-size:17px; text-transform:uppercase; letter-spacing:.06em;
+  padding:16px; cursor:pointer; transition:transform .08s; }
+.logbtn:active { transform:scale(.985); }
+.logbtn:focus-visible { outline:3px solid var(--ink); outline-offset:2px; }
+.done { border:1.5px solid var(--line); border-radius:10px; padding:16px; display:flex;
+  align-items:center; justify-content:space-between; background:#fff; }
+.done b { font-size:15px; }
+.done span { display:block; font-size:12.5px; color:var(--mute); margin-top:2px; }
+.undo { background:none; border:none; color:var(--mute); font:600 12px 'Inter',sans-serif;
+  text-decoration:underline; cursor:pointer; }
+.cal { margin-top:34px; }
+.calhead { display:flex; align-items:baseline; justify-content:space-between; }
+.month { font-family:'Archivo Black',sans-serif; font-size:16px; text-transform:uppercase; }
+.nav button { background:none; border:1.5px solid var(--ink); border-radius:6px; width:28px; height:28px;
+  font-weight:700; cursor:pointer; margin-left:6px; }
+.grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:14px; }
+.dow { text-align:center; font-size:10px; font-weight:700; color:var(--mute); letter-spacing:.1em; }
+.cell { aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:500; border:1px solid var(--line); background:#fff; }
+.cell.hit { background:var(--red); border-color:var(--red); color:#fff; font-weight:700; }
+.cell.today { box-shadow:0 0 0 2px var(--ink); }
+.cell.blank { border:none; background:transparent; }
+.monthsum { margin-top:12px; font-size:12.5px; color:var(--mute); }
+.toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%);
+  background:var(--ink); color:#fff; font:600 13px 'Inter',sans-serif; padding:10px 18px; border-radius:999px;
+  opacity:0; pointer-events:none; transition:opacity .2s; }
+.toast.show { opacity:1; }
+.databar { margin-top:30px; display:flex; gap:14px; }
+.databar button { background:none; border:none; color:var(--mute); font:600 11px 'Inter',sans-serif;
+  text-decoration:underline; cursor:pointer; padding:0; }
+@media (prefers-reduced-motion: reduce) { .logbtn, .toast { transition:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Daily challenge</div>
+  <h1>Show <em>up.</em></h1>
+
+  <div class="stats">
+    <div class="stat"><div class="num red" id="streak">0</div><div class="lab">Day streak</div></div>
+    <div class="stat"><div class="num" id="best">0</div><div class="lab">Best streak</div></div>
+    <div class="stat"><div class="num" id="total">0</div><div class="lab">Total days</div></div>
+  </div>
+
+  <div class="check" id="check"></div>
+
+  <div class="cal">
+    <div class="calhead">
+      <div class="month" id="monthlabel"></div>
+      <div class="nav">
+        <button id="prev" aria-label="Previous month">&#8249;</button>
+        <button id="next" aria-label="Next month">&#8250;</button>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="monthsum" id="monthsum"></div>
+  </div>
+
+  <div class="databar">
+    <button id="export">Export data</button>
+    <button id="import">Import data</button>
+  </div>
+</div>
+<div class="toast" id="toast">Logged. Keep the streak alive 🔴</div>
+
+<script>
+const KEY = "gym-tracker-log";
+const TYPES = [["push","Push"],["pull","Pull"],["legs","Legs"],["cardio","Cardio"],["full","Full body"],["other","Other"]];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DOW = ["S","M","T","W","T","F","S"];
+const pad = n => String(n).padStart(2,"0");
+const keyOf = d => d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
+
+let days = {};
+try { days = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e) { days = {}; }
+let picked = null;
+let view = { y: new Date().getFullYear(), m: new Date().getMonth() };
+
+const save = () => localStorage.setItem(KEY, JSON.stringify(days));
+
+function streaks() {
+  const set = new Set(Object.keys(days));
+  let current = 0;
+  const c = new Date();
+  if (!set.has(keyOf(c))) c.setDate(c.getDate()-1);
+  while (set.has(keyOf(c))) { current++; c.setDate(c.getDate()-1); }
+  const sorted = [...set].sort();
+  let bestN = 0, run = 0, prev = null;
+  for (const k of sorted) {
+    const d = new Date(k + "T12:00:00");
+    run = (prev && Math.round((d - prev)/86400000) === 1) ? run + 1 : 1;
+    if (run > bestN) bestN = run;
+    prev = d;
+  }
+  return { current, best: bestN };
+}
+
+function typeLabel(id) {
+  const t = TYPES.find(t => t[0] === id);
+  return t ? t[1] : "Workout";
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function render() {
+  const t = keyOf(new Date());
+  const { current, best } = streaks();
+  document.getElementById("streak").textContent = current;
+  document.getElementById("best").textContent = best;
+  document.getElementById("total").textContent = Object.keys(days).length;
+
+  const check = document.getElementById("check");
+  if (days[t]) {
+    const e = days[t];
+    check.innerHTML =
+      '<div class="done"><div><b>Today is logged ✓</b><span>' +
+      esc(typeLabel(e.type)) + (e.note ? " — " + esc(e.note) : "") +
+      '</span></div><button class="undo" id="undo">Undo</button></div>';
+    document.getElementById("undo").onclick = () => { delete days[t]; save(); render(); };
+  } else {
+    check.innerHTML =
+      '<div class="chips">' +
+      TYPES.map(([id,label]) =>
+        '<button class="chip' + (picked===id ? " on" : "") + '" data-t="' + id + '">' + label + '</button>'
+      ).join("") +
+      '</div>' +
+      '<input class="note" id="note" placeholder="Optional note (e.g. bench 185×5)" maxlength="120">' +
+      '<button class="logbtn" id="log">Log today\'s workout</button>';
+    check.querySelectorAll(".chip").forEach(b => {
+      b.onclick = () => { picked = (picked === b.dataset.t) ? null : b.dataset.t; render(); };
+    });
+    document.getElementById("log").onclick = () => {
+      const note = document.getElementById("note").value.trim();
+      days[t] = { type: picked || "other", note };
+      picked = null;
+      save(); render();
+      const toast = document.getElementById("toast");
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1600);
+    };
+  }
+  renderCal();
+}
+
+function renderCal() {
+  const first = new Date(view.y, view.m, 1);
+  const startDow = first.getDay();
+  const dim = new Date(view.y, view.m+1, 0).getDate();
+  const now = new Date();
+  document.getElementById("monthlabel").textContent = MONTHS[view.m] + " " + view.y;
+  let html = DOW.map(d => '<div class="dow">' + d + '</div>').join("");
+  for (let i = 0; i < startDow; i++) html += '<div class="cell blank"></div>';
+  for (let d = 1; d <= dim; d++) {
+    const k = view.y + "-" + pad(view.m+1) + "-" + pad(d);
+    const hit = days[k] ? " hit" : "";
+    const today = (view.y === now.getFullYear() && view.m === now.getMonth() && d === now.getDate()) ? " today" : "";
+    const title = days[k] && days[k].note ? ' title="' + esc(days[k].note) + '"' : "";
+    html += '<div class="cell' + hit + today + '"' + title + '>' + d + '</div>';
+  }
+  document.getElementById("grid").innerHTML = html;
+  const prefix = view.y + "-" + pad(view.m+1) + "-";
+  const n = Object.keys(days).filter(k => k.startsWith(prefix)).length;
+  document.getElementById("monthsum").textContent = n + " workout" + (n === 1 ? "" : "s") + " this month";
+}
+
+document.getElementById("prev").onclick = () => {
+  view = view.m === 0 ? { y: view.y-1, m: 11 } : { y: view.y, m: view.m-1 }; renderCal();
+};
+document.getElementById("next").onclick = () => {
+  view = view.m === 11 ? { y: view.y+1, m: 0 } : { y: view.y, m: view.m+1 }; renderCal();
+};
+
+// backup / restore (localStorage is per-browser, so this lets you move data between devices)
+document.getElementById("export").onclick = () => {
+  const blob = new Blob([JSON.stringify(days, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "gym-log-" + keyOf(new Date()) + ".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+document.getElementById("import").onclick = () => {
+  const inp = document.createElement("input");
+  inp.type = "file"; inp.accept = "application/json";
+  inp.onchange = () => {
+    const f = inp.files[0];
+    if (!f) return;
+    f.text().then(txt => {
+      try {
+        const data = JSON.parse(txt);
+        days = { ...days, ...data };
+        save(); render();
+      } catch(e) { alert("That file doesn't look like a valid gym log export."); }
+    });
+  };
+  inp.click();
+};
+
+render();
+</script>
+</body>
+</html>
