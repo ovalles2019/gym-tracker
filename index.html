@@ -3,18 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FAFAF8">
+<meta name="theme-color" content="#FAFAF8" id="theme-color">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="default" id="status-bar">
 <title>Show Up — Gym Tracker</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23E23B2E'/></svg>">
+<script>
+(function () {
+  const t = localStorage.getItem("gym-tracker-theme") || "system";
+  const dark = t === "dark" || (t === "system" && matchMedia("(prefers-color-scheme:dark)").matches);
+  if (t !== "system") document.documentElement.dataset.theme = t;
+  const meta = document.getElementById("theme-color");
+  if (meta) meta.content = dark ? "#111214" : "#FAFAF8";
+  const bar = document.getElementById("status-bar");
+  if (bar) bar.content = dark ? "black-translucent" : "default";
+})();
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap');
-:root { --red:#E23B2E; --ink:#111214; --paper:#FAFAF8; --line:#E4E2DC; --mute:#8A877F; }
+:root { --red:#E23B2E; --ink:#111214; --paper:#FAFAF8; --line:#E4E2DC; --mute:#8A877F; --surface:#fff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --ink:#F2F0EB; --paper:#111214; --line:#2E2D2A; --mute:#9A9790; --surface:#1A1B1E; }
+}
+[data-theme="dark"] { --ink:#F2F0EB; --paper:#111214; --line:#2E2D2A; --mute:#9A9790; --surface:#1A1B1E; }
+[data-theme="light"] { --red:#E23B2E; --ink:#111214; --paper:#FAFAF8; --line:#E4E2DC; --mute:#8A877F; --surface:#fff; }
 * { box-sizing:border-box; }
 body { margin:0; min-height:100vh; background:var(--paper); color:var(--ink);
-  font-family:'Inter',system-ui,sans-serif; display:flex; justify-content:center; }
+  font-family:'Inter',system-ui,sans-serif; display:flex; justify-content:center;
+  transition:background .2s,color .2s; }
 .wrap { width:100%; max-width:430px; padding:28px 20px 48px; }
+.topbar { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.topbar h1 { margin-top:0; }
+.themebtn { flex-shrink:0; margin-top:4px; background:var(--surface); border:1.5px solid var(--line);
+  border-radius:999px; width:40px; height:40px; cursor:pointer; font-size:18px; line-height:1;
+  display:flex; align-items:center; justify-content:center; transition:background .2s,border-color .2s; }
+.themebtn:focus-visible { outline:2px solid var(--red); outline-offset:2px; }
 .eyebrow { font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--mute); font-weight:600; }
 h1 { font-family:'Archivo Black','Arial Black',sans-serif; font-size:34px; line-height:1.02;
   text-transform:uppercase; letter-spacing:-.01em; margin:6px 0 2px; }
@@ -33,7 +56,7 @@ h1 em { font-style:normal; color:var(--red); }
 .chip.on { background:var(--ink); color:var(--paper); }
 .chip:focus-visible { outline:2px solid var(--red); outline-offset:2px; }
 .note { width:100%; border:1.5px solid var(--line); border-radius:8px; padding:10px 12px;
-  font:400 14px 'Inter',sans-serif; background:#fff; margin-bottom:12px; }
+  font:400 14px 'Inter',sans-serif; background:var(--surface); color:var(--ink); margin-bottom:12px; }
 .note:focus { outline:none; border-color:var(--ink); }
 .logbtn { width:100%; background:var(--red); color:#fff; border:none; border-radius:10px;
   font-family:'Archivo Black',sans-serif; font-size:17px; text-transform:uppercase; letter-spacing:.06em;
@@ -41,7 +64,7 @@ h1 em { font-style:normal; color:var(--red); }
 .logbtn:active { transform:scale(.985); }
 .logbtn:focus-visible { outline:3px solid var(--ink); outline-offset:2px; }
 .done { border:1.5px solid var(--line); border-radius:10px; padding:16px; display:flex;
-  align-items:center; justify-content:space-between; background:#fff; }
+  align-items:center; justify-content:space-between; background:var(--surface); }
 .done b { font-size:15px; }
 .done span { display:block; font-size:12.5px; color:var(--mute); margin-top:2px; }
 .undo { background:none; border:none; color:var(--mute); font:600 12px 'Inter',sans-serif;
@@ -49,30 +72,55 @@ h1 em { font-style:normal; color:var(--red); }
 .cal { margin-top:34px; }
 .calhead { display:flex; align-items:baseline; justify-content:space-between; }
 .month { font-family:'Archivo Black',sans-serif; font-size:16px; text-transform:uppercase; }
-.nav button { background:none; border:1.5px solid var(--ink); border-radius:6px; width:28px; height:28px;
-  font-weight:700; cursor:pointer; margin-left:6px; }
+.nav button { background:var(--surface); color:var(--ink); border:1.5px solid var(--ink); border-radius:6px;
+  width:28px; height:28px; font-weight:700; cursor:pointer; margin-left:6px; }
 .grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:14px; }
 .dow { text-align:center; font-size:10px; font-weight:700; color:var(--mute); letter-spacing:.1em; }
 .cell { aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center;
-  font-size:13px; font-weight:500; border:1px solid var(--line); background:#fff; }
+  font-size:13px; font-weight:500; border:1px solid var(--line); background:var(--surface); color:var(--ink); }
 .cell.hit { background:var(--red); border-color:var(--red); color:#fff; font-weight:700; }
 .cell.today { box-shadow:0 0 0 2px var(--ink); }
 .cell.blank { border:none; background:transparent; }
 .monthsum { margin-top:12px; font-size:12.5px; color:var(--mute); }
+.settings { margin-top:30px; border:1.5px solid var(--line); border-radius:10px; padding:16px; background:var(--surface); }
+.settings h2 { font:600 11px 'Inter',sans-serif; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--mute); margin:0 0 14px; }
+.setting { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.setting + .setting { margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
+.setting label { font:500 14px 'Inter',sans-serif; }
+.setting .hint { display:block; font:400 12px 'Inter',sans-serif; color:var(--mute); margin-top:3px; max-width:220px; }
+.toggle { position:relative; width:48px; height:28px; flex-shrink:0; }
+.toggle input { opacity:0; width:0; height:0; position:absolute; }
+.toggle span { position:absolute; inset:0; background:var(--line); border-radius:999px; cursor:pointer; transition:background .2s; }
+.toggle span::after { content:""; position:absolute; left:3px; top:3px; width:22px; height:22px;
+  background:#fff; border-radius:50%; transition:transform .2s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+.toggle input:checked + span { background:var(--red); }
+.toggle input:checked + span::after { transform:translateX(20px); }
+.toggle input:focus-visible + span { outline:2px solid var(--red); outline-offset:2px; }
+.time { border:1.5px solid var(--line); border-radius:8px; padding:8px 10px; font:500 14px 'Inter',sans-serif;
+  background:var(--paper); color:var(--ink); }
+.time:disabled { opacity:.45; }
+.reminder-status { margin-top:10px; font:400 12px 'Inter',sans-serif; color:var(--mute); }
+.reminder-status.warn { color:var(--red); }
 .toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%);
-  background:var(--ink); color:#fff; font:600 13px 'Inter',sans-serif; padding:10px 18px; border-radius:999px;
+  background:var(--ink); color:var(--paper); font:600 13px 'Inter',sans-serif; padding:10px 18px; border-radius:999px;
   opacity:0; pointer-events:none; transition:opacity .2s; }
 .toast.show { opacity:1; }
-.databar { margin-top:30px; display:flex; gap:14px; }
+.databar { margin-top:20px; display:flex; gap:14px; }
 .databar button { background:none; border:none; color:var(--mute); font:600 11px 'Inter',sans-serif;
   text-decoration:underline; cursor:pointer; padding:0; }
-@media (prefers-reduced-motion: reduce) { .logbtn, .toast { transition:none; } }
+@media (prefers-reduced-motion: reduce) { .logbtn, .toast, body, .toggle span, .toggle span::after { transition:none; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Daily challenge</div>
-  <h1>Show <em>up.</em></h1>
+  <div class="topbar">
+    <div>
+      <div class="eyebrow">Daily challenge</div>
+      <h1>Show <em>up.</em></h1>
+    </div>
+    <button class="themebtn" id="theme" aria-label="Toggle theme" title="Toggle theme">◐</button>
+  </div>
 
   <div class="stats">
     <div class="stat"><div class="num red" id="streak">0</div><div class="lab">Day streak</div></div>
@@ -94,6 +142,27 @@ h1 em { font-style:normal; color:var(--red); }
     <div class="monthsum" id="monthsum"></div>
   </div>
 
+  <div class="settings">
+    <h2>Settings</h2>
+    <div class="setting">
+      <div>
+        <label for="reminder">Daily reminder</label>
+        <span class="hint">Nudge if you haven't logged by this time</span>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="reminder">
+        <span></span>
+      </label>
+    </div>
+    <div class="setting">
+      <div>
+        <label for="remindertime">Reminder time</label>
+      </div>
+      <input class="time" type="time" id="remindertime" value="18:00">
+    </div>
+    <div class="reminder-status" id="reminder-status"></div>
+  </div>
+
   <div class="databar">
     <button id="export">Export data</button>
     <button id="import">Import data</button>
@@ -103,6 +172,9 @@ h1 em { font-style:normal; color:var(--red); }
 
 <script>
 const KEY = "gym-tracker-log";
+const SETTINGS_KEY = "gym-tracker-settings";
+const REMINDER_SENT_KEY = "gym-tracker-reminder-sent";
+const THEME_KEY = "gym-tracker-theme";
 const TYPES = [["push","Push"],["pull","Pull"],["legs","Legs"],["cardio","Cardio"],["full","Full body"],["other","Other"]];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DOW = ["S","M","T","W","T","F","S"];
@@ -113,8 +185,45 @@ let days = {};
 try { days = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e) { days = {}; }
 let picked = null;
 let view = { y: new Date().getFullYear(), m: new Date().getMonth() };
+let swReg = null;
 
 const save = () => localStorage.setItem(KEY, JSON.stringify(days));
+
+function getSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"); }
+  catch(e) { return {}; }
+}
+
+function saveSettings(s) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+}
+
+function isDark() {
+  const t = localStorage.getItem(THEME_KEY) || "system";
+  if (t === "dark") return true;
+  if (t === "light") return false;
+  return matchMedia("(prefers-color-scheme:dark)").matches;
+}
+
+function applyTheme() {
+  const t = localStorage.getItem(THEME_KEY) || "system";
+  if (t === "system") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+  document.getElementById("theme-color").content = isDark() ? "#111214" : "#FAFAF8";
+  document.getElementById("status-bar").content = isDark() ? "black-translucent" : "default";
+  document.getElementById("theme").textContent = t === "dark" ? "☀" : t === "light" ? "☾" : "◐";
+}
+
+function cycleTheme() {
+  const order = ["system", "light", "dark"];
+  const cur = localStorage.getItem(THEME_KEY) || "system";
+  localStorage.setItem(THEME_KEY, order[(order.indexOf(cur) + 1) % order.length]);
+  applyTheme();
+}
+
+matchMedia("(prefers-color-scheme:dark)").addEventListener("change", () => {
+  if ((localStorage.getItem(THEME_KEY) || "system") === "system") applyTheme();
+});
 
 function streaks() {
   const set = new Set(Object.keys(days));
@@ -203,6 +312,109 @@ function renderCal() {
   document.getElementById("monthsum").textContent = n + " workout" + (n === 1 ? "" : "s") + " this month";
 }
 
+function updateReminderUI() {
+  const s = getSettings();
+  const enabled = !!s.reminderEnabled;
+  const timeEl = document.getElementById("remindertime");
+  document.getElementById("reminder").checked = enabled;
+  timeEl.value = s.reminderTime || "18:00";
+  timeEl.disabled = !enabled;
+  const status = document.getElementById("reminder-status");
+  if (!("Notification" in window)) {
+    status.textContent = "Notifications aren't supported in this browser.";
+    status.className = "reminder-status warn";
+    return;
+  }
+  if (enabled && Notification.permission === "denied") {
+    status.textContent = "Notifications blocked — enable them in your browser or phone settings.";
+    status.className = "reminder-status warn";
+  } else if (enabled && Notification.permission === "granted") {
+    status.textContent = "Reminder set for " + formatTime(s.reminderTime || "18:00") + " daily.";
+    status.className = "reminder-status";
+  } else if (enabled) {
+    status.textContent = "Tap the toggle to allow notifications.";
+    status.className = "reminder-status";
+  } else {
+    status.textContent = "";
+    status.className = "reminder-status";
+  }
+}
+
+function formatTime(t) {
+  const [h, m] = t.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+async function requestNotificationPermission() {
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "denied") return false;
+  return (await Notification.requestPermission()) === "granted";
+}
+
+async function showReminderNotification() {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  const opts = {
+    body: "Haven't logged today's workout yet. Show up!",
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23E23B2E'/></svg>",
+    tag: "gym-reminder-" + keyOf(new Date()),
+    renotify: true
+  };
+  if (swReg) await swReg.showNotification("Show Up", opts);
+  else new Notification("Show Up", opts);
+}
+
+function checkReminder() {
+  const s = getSettings();
+  if (!s.reminderEnabled || Notification.permission !== "granted") return;
+  const today = keyOf(new Date());
+  if (days[today]) return;
+  const [h, m] = (s.reminderTime || "18:00").split(":").map(Number);
+  const now = new Date();
+  if (now.getHours() * 60 + now.getMinutes() < h * 60 + m) return;
+  if (localStorage.getItem(REMINDER_SENT_KEY) === today) return;
+  showReminderNotification();
+  localStorage.setItem(REMINDER_SENT_KEY, today);
+}
+
+async function initSettings() {
+  applyTheme();
+  updateReminderUI();
+
+  document.getElementById("theme").onclick = cycleTheme;
+
+  document.getElementById("reminder").onchange = async (e) => {
+    const s = getSettings();
+    s.reminderEnabled = e.target.checked;
+    if (s.reminderEnabled) {
+      const ok = await requestNotificationPermission();
+      if (!ok) s.reminderEnabled = false;
+    }
+    saveSettings(s);
+    updateReminderUI();
+  };
+
+  document.getElementById("remindertime").onchange = (e) => {
+    const s = getSettings();
+    s.reminderTime = e.target.value;
+    saveSettings(s);
+    localStorage.removeItem(REMINDER_SENT_KEY);
+    updateReminderUI();
+  };
+
+  if ("serviceWorker" in navigator) {
+    try { swReg = await navigator.serviceWorker.register("sw.js"); } catch(e) {}
+  }
+
+  checkReminder();
+  setInterval(checkReminder, 60000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") checkReminder();
+  });
+}
+
 document.getElementById("prev").onclick = () => {
   view = view.m === 0 ? { y: view.y-1, m: 11 } : { y: view.y, m: view.m-1 }; renderCal();
 };
@@ -210,7 +422,6 @@ document.getElementById("next").onclick = () => {
   view = view.m === 11 ? { y: view.y+1, m: 0 } : { y: view.y, m: view.m+1 }; renderCal();
 };
 
-// backup / restore (localStorage is per-browser, so this lets you move data between devices)
 document.getElementById("export").onclick = () => {
   const blob = new Blob([JSON.stringify(days, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
@@ -237,6 +448,7 @@ document.getElementById("import").onclick = () => {
 };
 
 render();
+initSettings();
 </script>
 </body>
 </html>
